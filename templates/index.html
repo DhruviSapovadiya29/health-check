@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Disease Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert2 -->
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(90deg, #E3F2FD, #E0F7FA);
+            padding: 20px;
+        }
+    
+        .navbar {
+            background: linear-gradient(90deg, #1976D2, #0097A7);
+            border-radius: 5px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+    
+        .navbar a {
+            color: white !important;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+    
+        .navbar a:hover {
+            color: #FFCCBC !important;
+        }
+    
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin-top: 20px;
+        }
+    
+        .card {
+            background: #FFFFFF;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.2);
+            color: #37474F;
+        }
+    
+        .logout-btn {
+            background-color: #D32F2F !important;
+            padding: 8px 15px;
+            border-radius: 6px;
+            color: white !important;
+            font-weight: bold;
+            transition: 0.3s ease;
+        }
+    
+        .logout-btn:hover {
+            background-color: #B71C1C !important;
+        }
+    
+        h2 {
+            color: #0288D1;
+            text-align: center;
+        }
+    
+        .btn {
+            background: #0288D1;
+            color: white;
+            transition: 0.3s ease;
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+        }
+    
+        .btn:hover {
+            background: #0277BD;
+        }
+    
+        .selected-symptoms {
+            background: #E1F5FE;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #81D4FA;
+        }
+    
+        .symptom-item {
+            display: inline-block;
+            background: #81D4FA;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin: 3px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    
+        .remove-btn {
+            background: #D32F2F;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 3px 6px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+    
+        .remove-btn:hover {
+            background: #B71C1C;
+        }
+    
+        .form-check-label {
+            font-size: 13px;
+            white-space: nowrap;
+        }
+    
+        #search-bar {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #81D4FA;
+            width: 100%;
+        }
+    
+        #search-results {
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #F1F8FF;
+            border: 1px solid #81D4FA;
+        }
+    </style>
+    
+    <script>
+        let selectedSymptoms = new Set();
+
+        function updateSelectedSymptoms() {
+            let symptomList = document.getElementById("selected-list");
+            let hiddenInput = document.getElementById("selected-symptoms-input");
+            
+            symptomList.innerHTML = "";
+            let selectedText = [];
+
+            selectedSymptoms.forEach(symptom => {
+                let span = document.createElement("span");
+                span.className = "symptom-item";
+                span.innerHTML = `${symptom} <button class="remove-btn" onclick="removeSymptom('${symptom}')">X</button>`;
+                symptomList.appendChild(span);
+                selectedText.push(symptom);
+            });
+
+            hiddenInput.value = selectedText.join(", ");
+        }
+
+        function removeSymptom(symptom) {
+            selectedSymptoms.delete(symptom);
+            document.querySelector(`input[value='${symptom}']`).checked = false;
+            updateSelectedSymptoms();
+        }
+
+        function searchSymptoms() {
+            let input = document.getElementById("search-bar").value.toLowerCase();
+            let checkboxes = document.querySelectorAll(".form-check");
+            let resultsContainer = document.getElementById("search-results");
+            resultsContainer.innerHTML = ""; 
+
+            if (input.length > 0) {
+                let resultSymptoms = [];
+                checkboxes.forEach(check => {
+                    let label = check.querySelector("label").textContent.toLowerCase();
+                    if (label.startsWith(input)) {
+                        resultSymptoms.push(check.querySelector("label").textContent);
+                    }
+                });
+
+                if (resultSymptoms.length > 0) {
+                    resultsContainer.innerHTML = "<strong>Matching Symptoms:</strong>";
+                    resultSymptoms.forEach(symptom => {
+                        let span = document.createElement("span");
+                        span.className = "symptom-item";
+                        span.textContent = symptom;
+                        span.onclick = function () {
+                            selectSymptom(symptom);
+                        };
+                        resultsContainer.appendChild(span);
+                    });
+                } else {
+                    resultsContainer.innerHTML = "<strong>No symptoms found.</strong>";
+                }
+            }
+        }
+
+        function selectSymptom(symptom) {
+            selectedSymptoms.add(symptom);
+            document.querySelector(`input[value='${symptom}']`).checked = true;
+            updateSelectedSymptoms();
+        }
+        function confirmLogout(event) {
+            event.preventDefault();  // Prevent the default link behavior
+            
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to logout?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#D32F2F',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, logout',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/logout";  // Redirect if confirmed
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white" href="/">Disease Predictor</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/accuracy-comparison">Accuracy Comparison</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link logout-btn" href="#" onclick="confirmLogout(event)">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="card">
+            <h2>Select the Symptoms</h2>
+            <form action="/predict" method="post">
+                <div class="mb-3">
+                    <h3 class="form-label">Search Symptoms:</h3>
+                    <input type="text" id="search-bar" class="form-control" placeholder="Search symptoms..." onkeyup="searchSymptoms()">
+                    <div id="search-results"></div>
+                </div>
+                <div class="mb-3">
+                    <h3 class="form-label">Choose Symptoms:</h3>
+                    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-2">
+                        {% for symptom in symptoms %}
+                            <div class="col d-flex align-items-center">
+                                <div class="form-check w-100">
+                                    <input class="form-check-input" type="checkbox" name="symptoms" value="{{ symptom }}" id="symptom_{{ loop.index }}" onchange="updateSelectedSymptoms()">
+                                    <label class="form-check-label" for="symptom_{{ loop.index }}">{{ symptom }}</label>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="selected-symptoms mt-3">
+                    <h3>Selected Symptoms:</h3>
+                    <div id="selected-list"></div>
+                </div>
+                <input type="hidden" name="selected_symptoms" id="selected-symptoms-input">
+                <br>
+                <button type="submit" class="btn btn-lg">Predict</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
